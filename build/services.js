@@ -1,14 +1,16 @@
-import { createRpcService, typeAssert } from 'ds-node-service';
+'use strict';
+
+var _dsNodeService = require('ds-node-service');
 
 const serviceName = 'conf-v1';
 const defaultCredentialsUrl = 'http://auth:8009/getAuthToken';
 
 function createService(address, runForever, credentialsUrl) {
-  const obj = createRpcService({
+  const obj = (0, _dsNodeService.createRpcService)({
     serviceName,
     address,
     runForever,
-    credentialsUrl,
+    credentialsUrl
   });
 
   obj.items = dataset(); // Attach whatever needed in any suitable way
@@ -16,13 +18,13 @@ function createService(address, runForever, credentialsUrl) {
   obj.registerApi({
     createItem: {
       method: ({ id, properties }) => {
-        typeAssert('String', name);
-        typeAssert('{...}', properties);
+        (0, _dsNodeService.typeAssert)('String', name);
+        (0, _dsNodeService.typeAssert)('{...}', properties);
         const res = obj.items.create({ id, properties });
         return res;
       },
-      argDoc: [['id', 'String'], ['properties', '{...}']],
-    },
+      argDoc: [['id', 'String'], ['properties', '{...}']]
+    }
   });
 
   return obj;
