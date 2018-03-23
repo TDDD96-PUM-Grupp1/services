@@ -1,3 +1,7 @@
+# Vim swp
+*.swp
+# build
+build/*
 # Logs
 logs
 *.log
