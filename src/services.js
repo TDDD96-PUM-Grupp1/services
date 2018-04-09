@@ -1,22 +1,46 @@
 import { createRpcService, typeAssert } from 'ds-node-service';
+import settings from './config';
 
-const serviceName = 'services';
-const instanceNames = [];
-
+const serviceName = settings.communication.service_name;
+const instances = [];
+const pingrate = 1;
+const timeoutCount = 3;
+/*
+ * Adds one to the playercount in the given instance.
+ * @param instanceName Name of the instance that got a new player.
+ *
+ */
 function addPlayerToInstance(instanceName) {
-  for (let i = 0; i < instanceNames.length; i += 1) {
-    if (instanceNames[i].name === instanceName) {
-      instanceNames[i].currentlyPlaying += 1;
+  for (let i = 0; i < instances.length; i += 1) {
+    if (instances[i].name === instanceName) {
+      instances[i].currentlyPlaying += 1;
+      return;
     }
   }
 }
 
 /*
+ * Removes one from the playercount in the given instance.
+ * @param instanceName Name of the instance that lost a player.
+ */
+
+function removePlayerFromInstance(instanceName) {
+  for (let i = 0; i < instances.length; i += 1) {
+    if (instances[i].name === instanceName) {
+      instances[i].currentlyPlaying -= 1;
+      return;
+    }
+  }
+}
+
+/*
+ * Checks if a given instance name can be created.
+ * @param name the name that should be checked.
  * @returns true if there is not instance with the given name.
  */
 function checkInstanceName(name) {
-  for (let i = 0; i < instanceNames.length; i += 1) {
-    if (instanceNames[i].name === name) {
+  for (let i = 0; i < instances.length; i += 1) {
+    if (instances[i].name === name) {
       return false;
     }
   }
@@ -24,36 +48,55 @@ function checkInstanceName(name) {
 }
 
 /*
+ * Returns the instance with the given id * @param id The id of the wanted instance
+ */
+function getInstanceById(id) {
+  for (let i = 0; i < instances.length; i += 1) {
+    if (instances[i].id === id) {
+      return instances[i];
+    }
+  }
+  return undefined;
+}
+
+/*
  * Add an instance if it doesn't exist.
  * @returns false if the given instance name already exists.
  */
-function addInstanceName(uiId, name) {
+function addInstance(uiId, name) {
   if (!checkInstanceName(name)) return false;
 
-  instanceNames.push({ id: uiId, name, currentlyPlaying: 0 });
+  instances.push({
+    id: uiId,
+    name,
+    currentlyPlaying: 0,
+    ping: timeoutCount
+  });
   return true;
 }
 
 /*
  * Remove an instance when a UI disconnects.
  */
-// currently disabled since we need to work on presence callback.
-/* eslint-disable no-unused-vars */
-function removeInstanceName(uiId) {
-  for (let i = 0; i < instanceNames.length; i += 1) {
-    if (instanceNames[i].id === uiId) instanceNames.splice(i, 1);
+function removeInstanceById(id) {
+  for (let i = 0; i < instances.length; i += 1) {
+    if (instances[i].id === id) {
+      instances.splice(i, 1);
+    }
   }
 }
-/* esling-enable no-unused-vars */
 
 /*
  * Creates all the rpc calls needed for the services.
+ * @param address the ip of the deepstream server.
+ * @param runForever true if the service should run forever.
  */
-function createService(address, runForever) {
+function createService(address, runForever, credentials) {
   const obj = createRpcService({
     serviceName,
     address,
-    runForever
+    runForever,
+    credentials,
   });
 
   obj.registerApi({
@@ -62,7 +105,7 @@ function createService(address, runForever) {
       method: ({ id, name }) => {
         typeAssert('String', id);
         typeAssert('String', name);
-        if (!addInstanceName(id, name)) {
+        if (!addInstance(id, name)) {
           console.log('Name already exists');
           return { error: 'Instance already exists' };
         }
@@ -72,18 +115,40 @@ function createService(address, runForever) {
     },
     // Returns all the instances as a list of objects.
     getInstances: {
-      method: () => instanceNames
+      method: () => instances
     }
   });
   obj.client.event.subscribe(`${serviceName}/playerAdded`, data => {
     addPlayerToInstance(data.instanceName);
   });
+
+  obj.client.event.subscribe(`${serviceName}/playerRemoved`, data => {
+    removePlayerFromInstance(data.instanceName);
+  });
   return obj;
 }
 
+/*
+ * Checks the presence of the UIs.
+ * @param service The service client that is able to send and receive deepstream data.
+ */
+function ping(service) {
+  service.client.presence.getAll(instances.map(instance => instance.id), instancesP => {
+    const instanceKeys = Object.keys(instancesP);
+    for (let i = 0; i < instanceKeys.length; i += 1) {
+      if (instancesP[instanceKeys[i]] === false) {
+        const instance = getInstanceById(instanceKeys[i]);
+        service.client.event.emit(`${serviceName}/instanceRemoved`, instance);
+        removeInstanceById(instanceKeys[i]);
+      }
+    }
+  });
+}
+
 function main() {
-  const service = createService('0.0.0.0:60020', true);
+  const service = createService(settings.communication.host_ip, true, settings.communication.auth);
   service.start();
+  setInterval(ping, 1000 / pingrate, service);
 }
 
 if (require.main === module) main();
