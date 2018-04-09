@@ -10,7 +10,7 @@
   "scripts": {
     "start": "npm run build  && node build/services.js",
     "build": "babel src -d build",
-    "test": "node src/services.test.js --env=jsdom",
+    "test": "node src/test.js --env=jsdom",
     "eject": "node eject",
     "lint": "eslint src/",
     "lintfix": "eslint src/ --fix"
