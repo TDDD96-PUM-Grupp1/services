@@ -3,6 +3,8 @@ import settings from './config';
 
 const serviceName = settings.communication.service_name;
 const instances = [];
+// This will get used for checking if a ui is still up.
+// eslint-disable-next-line
 const pingrate = 1;
 const timeoutCount = 3;
 /*
@@ -70,7 +72,7 @@ function addInstance(uiId, name) {
     id: uiId,
     name,
     currentlyPlaying: 0,
-    ping: timeoutCount
+    ping: timeoutCount,
   });
   return true;
 }
@@ -111,12 +113,12 @@ function createService(address, runForever, credentials) {
         }
         obj.client.event.emit(`${serviceName}/instanceCreated`, { name });
         return {};
-      }
+      },
     },
     // Returns all the instances as a list of objects.
     getInstances: {
-      method: () => instances
-    }
+      method: () => instances,
+    },
   });
   obj.client.event.subscribe(`${serviceName}/playerAdded`, data => {
     addPlayerToInstance(data.instanceName);
@@ -132,6 +134,7 @@ function createService(address, runForever, credentials) {
  * Checks the presence of the UIs.
  * @param service The service client that is able to send and receive deepstream data.
  */
+// eslint-disable-next-line
 function ping(service) {
   service.client.presence.getAll(instances.map(instance => instance.id), instancesP => {
     const instanceKeys = Object.keys(instancesP);
@@ -148,7 +151,7 @@ function ping(service) {
 function main() {
   const service = createService(settings.communication.host_ip, true, settings.communication.auth);
   service.start();
-  setInterval(ping, 1000 / pingrate, service);
+  // setInterval(ping, 1000 / pingrate, service);
 }
 
 if (require.main === module) main();

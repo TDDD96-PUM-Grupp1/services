@@ -1,2 +1,1 @@
-describe('test', () => {
-});
+describe('test', () => {});
