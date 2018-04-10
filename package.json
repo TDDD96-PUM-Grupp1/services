@@ -9,6 +9,7 @@
   },
   "scripts": {
     "start": "npm run build  && node build/services.js",
+    "start-local": "npm run build  && RUN_LOCAL=1 node build/services.js",    
     "build": "babel src -d build",
     "test": "node src/test.js --env=jsdom",
     "eject": "node eject",
