@@ -61,6 +61,15 @@ function getInstanceById(id) {
   return undefined;
 }
 
+function getInstanceByName(name) {
+  for (let i = 0; i < instances.length; i += 1) {
+    if (instances[i].name === name) {
+      return instances[i];
+    }
+  }
+  return undefined;
+}
+
 /*
  * Add an instance if it doesn't exist.
  * @returns false if the given instance name already exists.
@@ -112,6 +121,7 @@ function createService(address, runForever, credentials) {
           return { error: 'Instance already exists' };
         }
         obj.client.event.emit(`${serviceName}/instanceCreated`, { name });
+        obj.client.event.subscribe(`${serviceName}/instancePing`, instancePinged);
         return {};
       },
     },
@@ -130,22 +140,28 @@ function createService(address, runForever, credentials) {
   return obj;
 }
 
+function instancePinged(data)
+{
+  let instance = getInstanceByName(data.name);
+  if(instance === undefined)
+    return;
+  instance.ping = timeoutCount;
+}
+
 /*
  * Checks the presence of the UIs.
  * @param service The service client that is able to send and receive deepstream data.
  */
-// eslint-disable-next-line
 function ping(service) {
-  service.client.presence.getAll(instances.map(instance => instance.id), instancesP => {
-    const instanceKeys = Object.keys(instancesP);
-    for (let i = 0; i < instanceKeys.length; i += 1) {
-      if (instancesP[instanceKeys[i]] === false) {
-        const instance = getInstanceById(instanceKeys[i]);
-        service.client.event.emit(`${serviceName}/instanceRemoved`, instance);
-        removeInstanceById(instanceKeys[i]);
-      }
+  for(let i = 0; i < instances.length; i += 1)
+  {
+    instances[i].ping -= 1;
+    if(instances[i].ping == 0)
+    {
+      service.client.event.emit(`${serviceName}/instanceRemoved`, {name: instances[i].name});
+      removeInstanceById(instances[i].id);
     }
-  });
+  }
 }
 
 function main() {
@@ -155,7 +171,7 @@ function main() {
   }
   const service = createService(settings.communication.host_ip, true, settings.communication.auth);
   service.start();
-  // setInterval(ping, 1000 / pingrate, service);
+  setInterval(ping, 1000 / pingrate, service);
 }
 
 if (require.main === module) main();
