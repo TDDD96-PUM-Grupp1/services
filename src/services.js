@@ -74,7 +74,7 @@ function getInstanceByName(name) {
  * Add an instance if it doesn't exist.
  * @returns false if the given instance name already exists.
  */
-function addInstance(uiId, name) {
+function addInstance(uiId, name, maxPlayers, gamemode) {
   if (!checkInstanceName(name)) return false;
 
   instances.push({
@@ -82,6 +82,8 @@ function addInstance(uiId, name) {
     name,
     currentlyPlaying: 0,
     ping: timeoutCount,
+    maxPlayers,
+    gamemode
   });
   return true;
 }
@@ -113,14 +115,16 @@ function createService(address, runForever, credentials) {
   obj.registerApi({
     // Creates an instance with the given name.
     createInstance: {
-      method: ({ id, name }) => {
+      method: ({ id, name,maxPlayers,gamemode }) => {
         typeAssert('String', id);
         typeAssert('String', name);
-        if (!addInstance(id, name)) {
+        typeAssert('Number', maxPlayers);
+        typeAssert('String', gamemode);
+        if (!addInstance(id, name, maxPlayers, gamemode)) {
           console.log('Name already exists');
           return { error: 'Instance already exists' };
         }
-        obj.client.event.emit(`${serviceName}/instanceCreated`, { name });
+        obj.client.event.emit(`${serviceName}/instanceCreated`, { name, maxPlayers, gamemode });
         obj.client.event.subscribe(`${serviceName}/instancePing`, instancePinged);
         return {};
       },
