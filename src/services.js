@@ -149,6 +149,10 @@ function ping(service) {
 }
 
 function main() {
+  if (process.env.RUN_LOCAL) {
+    console.log('Using local Deepstream server.');
+    settings.communication.host_ip = 'localhost:60020';
+  }
   const service = createService(settings.communication.host_ip, true, settings.communication.auth);
   service.start();
   // setInterval(ping, 1000 / pingrate, service);
