@@ -49,19 +49,6 @@ function checkInstanceName(name) {
 }
 
 /*
- * Returns the instance with the given id
- * @param String id Id of the wanted instance
- */
-function getInstanceById(id) {
-  for (let i = 0; i < instances.length; i += 1) {
-    if (instances[i].id === id) {
-      return instances[i];
-    }
-  }
-  return undefined;
-}
-
-/*
  * @param String name Name of the instance.
  * @return {...} The instance with the given name.
  */
@@ -109,6 +96,18 @@ function removeInstanceById(id) {
 }
 
 /*
+ * Resets the timeout for the instance.
+ * @param data {...} contains the name of the instance
+ */
+function instancePinged(data) {
+  const instance = getInstanceByName(data.name);
+  if (instance === undefined) {
+    return;
+  }
+  instance.ping = timeoutCount;
+}
+
+/*
  * Creates all the rpc calls needed for the services.
  * @param address the ip of the deepstream server.
  * @param runForever true if the service should run forever.
@@ -124,6 +123,7 @@ function createService(address, runForever, credentials) {
   obj.registerApi({
     // Creates an instance with the given name.
     createInstance: {
+      // eslint-disable-next-line
       method: ({ id, name, maxPlayers, gamemode }) => {
         typeAssert('String', id);
         typeAssert('String', name);
@@ -154,24 +154,13 @@ function createService(address, runForever, credentials) {
 }
 
 /*
- * Resets the timeout for the instance.
- * @param data {...} contains the name of the instance
- */
-function instancePinged(data) {
-  const instance = getInstanceByName(data.name);
-  if (instance === undefined) {
-  { return; }
-  instance.ping = timeoutCount;
-}
-
-/*
  * Checks the presence of the UIs.
  * @param {...} service The service client that is able to send and receive deepstream data.
  */
 function ping(service) {
   for (let i = 0; i < instances.length; i += 1) {
     instances[i].ping -= 1;
-    if (instances[i].ping == 0) {
+    if (instances[i].ping === 0) {
       service.client.event.emit(`${serviceName}/instanceRemoved`, { name: instances[i].name });
       removeInstanceById(instances[i].id);
     }
