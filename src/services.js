@@ -4,7 +4,7 @@ import settings from './config';
 const serviceName = settings.communication.service_name;
 const instances = [];
 const pingrate = 1;
-const timeoutCount = 3;
+const timeoutCount = 5;
 
 /*
  * Adds one to the playercount in the given instance.
