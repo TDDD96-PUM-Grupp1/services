@@ -3,13 +3,12 @@ import settings from './config';
 
 const serviceName = settings.communication.service_name;
 const instances = [];
-// This will get used for checking if a ui is still up.
-// eslint-disable-next-line
 const pingrate = 1;
 const timeoutCount = 3;
+
 /*
  * Adds one to the playercount in the given instance.
- * @param instanceName Name of the instance that got a new player.
+ * @param String instanceNmae Name of the instance that got a new player.
  *
  */
 function addPlayerToInstance(instanceName) {
@@ -23,7 +22,7 @@ function addPlayerToInstance(instanceName) {
 
 /*
  * Removes one from the playercount in the given instance.
- * @param instanceName Name of the instance that lost a player.
+ * @param String instanceName Name of the instance that lost a player.
  */
 
 function removePlayerFromInstance(instanceName) {
@@ -37,7 +36,7 @@ function removePlayerFromInstance(instanceName) {
 
 /*
  * Checks if a given instance name can be created.
- * @param name the name that should be checked.
+ * @param String name Name that should be checked.
  * @returns true if there is not instance with the given name.
  */
 function checkInstanceName(name) {
@@ -50,7 +49,8 @@ function checkInstanceName(name) {
 }
 
 /*
- * Returns the instance with the given id * @param id The id of the wanted instance
+ * Returns the instance with the given id
+ * @param String id Id of the wanted instance
  */
 function getInstanceById(id) {
   for (let i = 0; i < instances.length; i += 1) {
@@ -61,6 +61,10 @@ function getInstanceById(id) {
   return undefined;
 }
 
+/*
+ * @param String name Name of the instance.
+ * @return {...} The instance with the given name.
+ */
 function getInstanceByName(name) {
   for (let i = 0; i < instances.length; i += 1) {
     if (instances[i].name === name) {
@@ -72,7 +76,11 @@ function getInstanceByName(name) {
 
 /*
  * Add an instance if it doesn't exist.
- * @returns false if the given instance name already exists.
+ * @param String uiId Id of the UI that starts the instance.
+ * @param String name Name of the instance.
+ * @param Int maxPlayers Number of players that are allowed to join.
+ * @param String gamemode Gamemode of the instance.
+ * @return false if the given instance name already exists.
  */
 function addInstance(uiId, name, maxPlayers, gamemode) {
   if (!checkInstanceName(name)) return false;
@@ -83,13 +91,14 @@ function addInstance(uiId, name, maxPlayers, gamemode) {
     currentlyPlaying: 0,
     ping: timeoutCount,
     maxPlayers,
-    gamemode
+    gamemode,
   });
   return true;
 }
 
 /*
  * Remove an instance when a UI disconnects.
+ * @param String id Id of the wanted instance.
  */
 function removeInstanceById(id) {
   for (let i = 0; i < instances.length; i += 1) {
@@ -115,7 +124,7 @@ function createService(address, runForever, credentials) {
   obj.registerApi({
     // Creates an instance with the given name.
     createInstance: {
-      method: ({ id, name,maxPlayers,gamemode }) => {
+      method: ({ id, name, maxPlayers, gamemode }) => {
         typeAssert('String', id);
         typeAssert('String', name);
         typeAssert('Number', maxPlayers);
@@ -144,25 +153,26 @@ function createService(address, runForever, credentials) {
   return obj;
 }
 
-function instancePinged(data)
-{
-  let instance = getInstanceByName(data.name);
-  if(instance === undefined)
-    return;
+/*
+ * Resets the timeout for the instance.
+ * @param data {...} contains the name of the instance
+ */
+function instancePinged(data) {
+  const instance = getInstanceByName(data.name);
+  if (instance === undefined) {
+  { return; }
   instance.ping = timeoutCount;
 }
 
 /*
  * Checks the presence of the UIs.
- * @param service The service client that is able to send and receive deepstream data.
+ * @param {...} service The service client that is able to send and receive deepstream data.
  */
 function ping(service) {
-  for(let i = 0; i < instances.length; i += 1)
-  {
+  for (let i = 0; i < instances.length; i += 1) {
     instances[i].ping -= 1;
-    if(instances[i].ping == 0)
-    {
-      service.client.event.emit(`${serviceName}/instanceRemoved`, {name: instances[i].name});
+    if (instances[i].ping == 0) {
+      service.client.event.emit(`${serviceName}/instanceRemoved`, { name: instances[i].name });
       removeInstanceById(instances[i].id);
     }
   }
