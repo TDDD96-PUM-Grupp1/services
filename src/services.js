@@ -2,7 +2,7 @@ import { createRpcService, typeAssert } from 'ds-node-service';
 import settings from './config';
 
 const serviceName = settings.communication.service_name;
-const instances = {}; 
+const instances = {};
 const pingrate = 1;
 const timeoutCount = 5;
 
@@ -54,10 +54,10 @@ function addInstance(uiId, name, maxPlayers, gamemode) {
   return true;
 }
 
-function removeInstance(name)
-{
-  if(instances[name] !== undefined)
+function removeInstance(name) {
+  if (instances[name] !== undefined) {
     delete instances[name];
+  }
 }
 
 /*
@@ -125,7 +125,7 @@ function createService(address, runForever, credentials) {
 function ping(service) {
   const keys = Object.keys(instances);
   for (let i = 0; i < keys.length; i += 1) {
-    let instance = instances[keys[i]];
+    const instance = instances[keys[i]];
     instance.ping -= 1;
     if (instance.ping === 0) {
       service.client.event.emit(`${serviceName}/instanceRemoved`, { name: keys[i] });
@@ -144,5 +144,6 @@ function main() {
   setInterval(ping, 1000 / pingrate, service);
 }
 
-export default createService;
 if (require.main === module) main();
+
+export default createService;

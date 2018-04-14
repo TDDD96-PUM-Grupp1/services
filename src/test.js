@@ -12,12 +12,25 @@ const validInstance1 = {
   gamemode: 'testGamemode',
 };
 
+const validInstance1Compare = {
+  id: 'randomid',
+  maxPlayers: 10,
+  gamemode: 'testGamemode',
+};
+
+const validInstance2Compare = {
+  id: 'randomid2',
+  maxPlayers: 15,
+  gamemode: 'testGamemode2',
+};
+
 const validInstance2 = {
   id: 'randomid2',
   name: 'instanceName2',
   maxPlayers: 15,
   gamemode: 'testGamemode2',
 };
+
 const invalidInstance1 = {};
 
 const invalidInstance2 = {
@@ -45,7 +58,7 @@ describe('Service', () => {
     await service.client.rpc.p
       .make(`${serviceName}/getInstances`, {})
       .then(instances => {
-        expect(instances.length).toBe(0);
+        expect(instances).toEqual({});
       })
       .catch(data => {
         expect(data).not.toEqual(expect.anything());
@@ -63,7 +76,7 @@ describe('Service', () => {
       });
   });
 
-  it('create instance with same name', async () => {
+  it('failes to create instance with same name', async () => {
     await service.client.rpc.p
       .make(`${serviceName}/createInstance`, validInstance1)
       .then(data => {
@@ -74,17 +87,64 @@ describe('Service', () => {
       });
   });
 
-  it('get created instance', async () => {
+  it('gets the created instance', async () => {
     await service.client.rpc.p
       .make(`${serviceName}/getInstances`, {})
       .then(instances => {
-        expect(instances[validInstance1.name]).toEqual(expect.objectContaining(validInstance1));
+        const obj = expect.objectContaining(validInstance1Compare);
+        expect(instances[validInstance1.name]).toEqual(obj);
       })
       .catch(data => {
         expect(data).not.toEqual(expect.anything());
       });
   });
 
+  it('creates another instance without error', async () => {
+    await service.client.rpc.p
+      .make(`${serviceName}/createInstance`, validInstance2)
+      .then(data => {
+        expect(data).toEqual({});
+      })
+      .catch(data => {
+        expect(data).not.toEqual(expect.anything());
+      });
+  });
+
+  it('gets the created instances', async () => {
+    await service.client.rpc.p
+      .make(`${serviceName}/getInstances`, {})
+      .then(instances => {
+        const obj1 = expect.objectContaining(validInstance1Compare);
+        const obj2 = expect.objectContaining(validInstance2Compare);
+        expect(instances[validInstance1.name]).toEqual(obj1);
+        expect(instances[validInstance2.name]).toEqual(obj2);
+      })
+      .catch(data => {
+        expect(data).not.toEqual(expect.anything());
+      });
+  });
+
+  it('failes to create an instance with no values', async () => {
+    await service.client.rpc.p
+      .make(`${serviceName}/createInstance`, invalidInstance1)
+      .then(data => {
+        expect(data).not.toEqual({});
+      })
+      .catch(data => {
+        expect(data).toEqual(expect.anything());
+      });
+  });
+
+  it('failes to create an instance with invalid parameters', async () => {
+    await service.client.rpc.p
+      .make(`${serviceName}/createInstance`, invalidInstance2)
+      .then(data => {
+        expect(data).not.toEqual({});
+      })
+      .catch(data => {
+        expect(data).toEqual(expect.anything());
+      });
+  });
   it('closes without error', async () => {
     await service.close();
     await server.stop();
