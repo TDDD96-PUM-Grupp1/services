@@ -113,6 +113,7 @@ function instancePinged(data) {
  * @param runForever true if the service should run forever.
  */
 function createService(address, runForever, credentials) {
+  console.log('Creating service');
   const obj = createRpcService({
     serviceName,
     address,
@@ -131,10 +132,9 @@ function createService(address, runForever, credentials) {
         typeAssert('String', gamemode);
         if (!addInstance(id, name, maxPlayers, gamemode)) {
           console.log('Name already exists');
-          return { error: 'Instance already exists' };
+          throw new Error('Instance already exists');
         }
         obj.client.event.emit(`${serviceName}/instanceCreated`, { name, maxPlayers, gamemode });
-        obj.client.event.subscribe(`${serviceName}/instancePing`, instancePinged);
         return {};
       },
     },
@@ -143,6 +143,7 @@ function createService(address, runForever, credentials) {
       method: () => instances,
     },
   });
+  obj.client.event.subscribe(`${serviceName}/instancePing`, instancePinged);
   obj.client.event.subscribe(`${serviceName}/playerAdded`, data => {
     addPlayerToInstance(data.instanceName);
   });
@@ -177,4 +178,5 @@ function main() {
   setInterval(ping, 1000 / pingrate, service);
 }
 
+export default createService;
 if (require.main === module) main();
