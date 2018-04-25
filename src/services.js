@@ -12,7 +12,7 @@ const timeoutCount = 5;
  *
  */
 function addPlayerToInstance(instanceName) {
-  if(checkInstanceName(instanceName))
+  if(instances[instanceName] !== undefined)
     instances[instanceName].currentlyPlaying += 1;
 }
 
@@ -22,7 +22,7 @@ function addPlayerToInstance(instanceName) {
  */
 
 function removePlayerFromInstance(instanceName) {
-  if(checkInstanceName(instanceName))
+  if(instances[instanceName] !== undefined)
     instances[instanceName].currentlyPlaying -= 1;
 }
 
@@ -57,7 +57,7 @@ function addInstance(uiId, name, maxPlayers, gamemode) {
 }
 
 function removeInstance(name) {
-  if (!checkInstanceName(name)) {
+  if (instances[name] !== undefined) {
     delete instances[name];
   }
 }
@@ -67,7 +67,7 @@ function removeInstance(name) {
  * @param data {...} contains the name of the instance
  */
 function instancePinged(data) {
-  if (!checkInstanceName(data.name)) {
+  if (instances[data.name] === undefined) {
     return;
   }
   instances[data.name].ping = timeoutCount;
@@ -79,7 +79,6 @@ function instancePinged(data) {
  * @param runForever true if the service should run forever.
  */
 function createService(address, runForever, credentials) {
-  console.log('Creating service');
   const obj = createRpcService({
     serviceName,
     address,
