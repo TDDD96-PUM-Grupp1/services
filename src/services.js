@@ -12,8 +12,9 @@ const timeoutCount = 5;
  *
  */
 function addPlayerToInstance(instanceName) {
-  if(instances[instanceName] !== undefined)
+  if (instances[instanceName] !== undefined) {
     instances[instanceName].currentlyPlaying += 1;
+  }
 }
 
 /*
@@ -22,8 +23,9 @@ function addPlayerToInstance(instanceName) {
  */
 
 function removePlayerFromInstance(instanceName) {
-  if(instances[instanceName] !== undefined)
+  if (instances[instanceName] !== undefined) {
     instances[instanceName].currentlyPlaying -= 1;
+  }
 }
 
 /*
