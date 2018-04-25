@@ -12,7 +12,8 @@ const timeoutCount = 5;
  *
  */
 function addPlayerToInstance(instanceName) {
-  instances[instanceName].currentlyPlaying += 1;
+  if(checkInstanceName(instanceName))
+    instances[instanceName].currentlyPlaying += 1;
 }
 
 /*
@@ -21,7 +22,8 @@ function addPlayerToInstance(instanceName) {
  */
 
 function removePlayerFromInstance(instanceName) {
-  instances[instanceName].currentlyPlaying -= 1;
+  if(checkInstanceName(instanceName))
+    instances[instanceName].currentlyPlaying -= 1;
 }
 
 /*
@@ -55,7 +57,7 @@ function addInstance(uiId, name, maxPlayers, gamemode) {
 }
 
 function removeInstance(name) {
-  if (instances[name] !== undefined) {
+  if (!checkInstanceName(name)) {
     delete instances[name];
   }
 }
@@ -65,7 +67,7 @@ function removeInstance(name) {
  * @param data {...} contains the name of the instance
  */
 function instancePinged(data) {
-  if (instances[data.name] === undefined) {
+  if (!checkInstanceName(data.name)) {
     return;
   }
   instances[data.name].ping = timeoutCount;
