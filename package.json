@@ -3,16 +3,19 @@
   "version": "1.0.0",
   "dependencies": {
     "babel": "^6.23.0",
+    "body-parser": "^1.18.2",
+    "deepstream.io": "^3.1.1",
     "deepstream.io-client-js": "^2.3.0",
     "ds-node-service": "^2.0.1",
-    "express": "^4.16.2"
+    "express": "^4.16.3",
+    "jest": "^22.4.3"
   },
   "scripts": {
     "start": "npm run build  && node build/services.js",
     "start-local": "npm run build  && RUN_LOCAL=1 node build/services.js",
-    "start-pc-local": "npm run build && set RUN_LOCAL=1 node build/services.js",
+    "start-pc-local": "npm run build && set RUN_LOCAL=1 && node build/services.js",
     "build": "babel src -d build",
-    "test": "node src/test.js --env=jsdom",
+    "test": "npm run build && jest src/test.js",
     "eject": "node eject",
     "lint": "eslint src/",
     "lintfix": "eslint src/ --fix"

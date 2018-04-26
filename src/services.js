@@ -2,21 +2,18 @@ import { createRpcService, typeAssert } from 'ds-node-service';
 import settings from './config';
 
 const serviceName = settings.communication.service_name;
-const instances = [];
+const instances = {};
 const pingrate = 1;
 const timeoutCount = 50000;
 
 /*
  * Adds one to the playercount in the given instance.
- * @param String instanceNmae Name of the instance that got a new player.
+ * @param String instanceName Name of the instance that got a new player.
  *
  */
 function addPlayerToInstance(instanceName) {
-  for (let i = 0; i < instances.length; i += 1) {
-    if (instances[i].name === instanceName) {
-      instances[i].currentlyPlaying += 1;
-      return;
-    }
+  if (instances[instanceName] !== undefined) {
+    instances[instanceName].currentlyPlaying += 1;
   }
 }
 
@@ -26,11 +23,8 @@ function addPlayerToInstance(instanceName) {
  */
 
 function removePlayerFromInstance(instanceName) {
-  for (let i = 0; i < instances.length; i += 1) {
-    if (instances[i].name === instanceName) {
-      instances[i].currentlyPlaying -= 1;
-      return;
-    }
+  if (instances[instanceName] !== undefined) {
+    instances[instanceName].currentlyPlaying -= 1;
   }
 }
 
@@ -40,25 +34,7 @@ function removePlayerFromInstance(instanceName) {
  * @returns true if there is not instance with the given name.
  */
 function checkInstanceName(name) {
-  for (let i = 0; i < instances.length; i += 1) {
-    if (instances[i].name === name) {
-      return false;
-    }
-  }
-  return true;
-}
-
-/*
- * @param String name Name of the instance.
- * @return {...} The instance with the given name.
- */
-function getInstanceByName(name) {
-  for (let i = 0; i < instances.length; i += 1) {
-    if (instances[i].name === name) {
-      return instances[i];
-    }
-  }
-  return undefined;
+  return instances[name] === undefined;
 }
 
 /*
@@ -72,9 +48,8 @@ function getInstanceByName(name) {
 function addInstance(uiId, name, maxPlayers, gamemode, buttons) {
   if (!checkInstanceName(name)) return false;
 
-  instances.push({
+  instances[name] = {
     id: uiId,
-    name,
     currentlyPlaying: 0,
     ping: timeoutCount,
     maxPlayers,
@@ -84,15 +59,9 @@ function addInstance(uiId, name, maxPlayers, gamemode, buttons) {
   return true;
 }
 
-/*
- * Remove an instance when a UI disconnects.
- * @param String id Id of the wanted instance.
- */
-function removeInstanceById(id) {
-  for (let i = 0; i < instances.length; i += 1) {
-    if (instances[i].id === id) {
-      instances.splice(i, 1);
-    }
+function removeInstance(name) {
+  if (instances[name] !== undefined) {
+    delete instances[name];
   }
 }
 
@@ -101,11 +70,10 @@ function removeInstanceById(id) {
  * @param data {...} contains the name of the instance
  */
 function instancePinged(data) {
-  const instance = getInstanceByName(data.name);
-  if (instance === undefined) {
+  if (instances[data.name] === undefined) {
     return;
   }
-  instance.ping = timeoutCount;
+  instances[data.name].ping = timeoutCount;
 }
 
 /*
@@ -133,7 +101,7 @@ function createService(address, runForever, credentials) {
         typeAssert('Array', buttons);
         if (!addInstance(id, name, maxPlayers, gamemode, buttons)) {
           console.log('Name already exists');
-          return { error: 'Instance already exists' };
+          throw new Error('Instance already exists');
         }
         obj.client.event.emit(`${serviceName}/instanceCreated`, {
           name,
@@ -141,7 +109,6 @@ function createService(address, runForever, credentials) {
           gamemode,
           buttons,
         });
-        obj.client.event.subscribe(`${serviceName}/instancePing`, instancePinged);
         return {};
       }
     },
@@ -150,6 +117,7 @@ function createService(address, runForever, credentials) {
       method: () => instances
     }
   });
+  obj.client.event.subscribe(`${serviceName}/instancePing`, instancePinged);
   obj.client.event.subscribe(`${serviceName}/playerAdded`, data => {
     addPlayerToInstance(data.instanceName);
   });
@@ -165,11 +133,13 @@ function createService(address, runForever, credentials) {
  * @param {...} service The service client that is able to send and receive deepstream data.
  */
 function ping(service) {
-  for (let i = 0; i < instances.length; i += 1) {
-    instances[i].ping -= 1;
-    if (instances[i].ping === 0) {
-      service.client.event.emit(`${serviceName}/instanceRemoved`, { name: instances[i].name });
-      removeInstanceById(instances[i].id);
+  const keys = Object.keys(instances);
+  for (let i = 0; i < keys.length; i += 1) {
+    const instance = instances[keys[i]];
+    instance.ping -= 1;
+    if (instance.ping === 0) {
+      service.client.event.emit(`${serviceName}/instanceRemoved`, { name: keys[i] });
+      removeInstance(keys[i]);
     }
   }
 }
@@ -185,3 +155,5 @@ function main() {
 }
 
 if (require.main === module) main();
+
+export default createService;
