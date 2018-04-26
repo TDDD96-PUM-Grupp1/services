@@ -2,7 +2,7 @@ import { createRpcService, typeAssert } from 'ds-node-service';
 import settings from './config';
 
 const serviceName = settings.communication.service_name;
-const instances = {}; 
+const instances = {};
 const pingrate = 1;
 const timeoutCount = 5;
 
@@ -12,7 +12,9 @@ const timeoutCount = 5;
  *
  */
 function addPlayerToInstance(instanceName) {
-  instances[instanceName].currentlyPlaying += 1;
+  if (instances[instanceName] !== undefined) {
+    instances[instanceName].currentlyPlaying += 1;
+  }
 }
 
 /*
@@ -21,7 +23,9 @@ function addPlayerToInstance(instanceName) {
  */
 
 function removePlayerFromInstance(instanceName) {
-  instances[instanceName].currentlyPlaying -= 1;
+  if (instances[instanceName] !== undefined) {
+    instances[instanceName].currentlyPlaying -= 1;
+  }
 }
 
 /*
@@ -54,10 +58,10 @@ function addInstance(uiId, name, maxPlayers, gamemode) {
   return true;
 }
 
-function removeInstance(name)
-{
-  if(instances[name] !== undefined)
+function removeInstance(name) {
+  if (instances[name] !== undefined) {
     delete instances[name];
+  }
 }
 
 /*
@@ -95,10 +99,9 @@ function createService(address, runForever, credentials) {
         typeAssert('String', gamemode);
         if (!addInstance(id, name, maxPlayers, gamemode)) {
           console.log('Name already exists');
-          return { error: 'Instance already exists' };
+          throw new Error('Instance already exists');
         }
         obj.client.event.emit(`${serviceName}/instanceCreated`, { name, maxPlayers, gamemode });
-        obj.client.event.subscribe(`${serviceName}/instancePing`, instancePinged);
         return {};
       },
     },
@@ -107,6 +110,7 @@ function createService(address, runForever, credentials) {
       method: () => instances,
     },
   });
+  obj.client.event.subscribe(`${serviceName}/instancePing`, instancePinged);
   obj.client.event.subscribe(`${serviceName}/playerAdded`, data => {
     addPlayerToInstance(data.instanceName);
   });
@@ -124,7 +128,7 @@ function createService(address, runForever, credentials) {
 function ping(service) {
   const keys = Object.keys(instances);
   for (let i = 0; i < keys.length; i += 1) {
-    let instance = instances[keys[i]];
+    const instance = instances[keys[i]];
     instance.ping -= 1;
     if (instance.ping === 0) {
       service.client.event.emit(`${serviceName}/instanceRemoved`, { name: keys[i] });
@@ -144,3 +148,5 @@ function main() {
 }
 
 if (require.main === module) main();
+
+export default createService;
