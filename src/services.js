@@ -4,7 +4,7 @@ import settings from './config';
 const serviceName = settings.communication.service_name;
 const instances = [];
 const pingrate = 1;
-const timeoutCount = 5;
+const timeoutCount = 50000;
 
 /*
  * Adds one to the playercount in the given instance.
@@ -69,7 +69,7 @@ function getInstanceByName(name) {
  * @param String gamemode Gamemode of the instance.
  * @return false if the given instance name already exists.
  */
-function addInstance(uiId, name, maxPlayers, gamemode) {
+function addInstance(uiId, name, maxPlayers, gamemode, buttons) {
   if (!checkInstanceName(name)) return false;
 
   instances.push({
@@ -79,6 +79,7 @@ function addInstance(uiId, name, maxPlayers, gamemode) {
     ping: timeoutCount,
     maxPlayers,
     gamemode,
+    buttons
   });
   return true;
 }
@@ -117,31 +118,37 @@ function createService(address, runForever, credentials) {
     serviceName,
     address,
     runForever,
-    credentials,
+    credentials
   });
 
   obj.registerApi({
     // Creates an instance with the given name.
     createInstance: {
       // eslint-disable-next-line
-      method: ({ id, name, maxPlayers, gamemode }) => {
+      method: ({ id, name, maxPlayers, gamemode, buttons }) => {
         typeAssert('String', id);
         typeAssert('String', name);
         typeAssert('Number', maxPlayers);
         typeAssert('String', gamemode);
-        if (!addInstance(id, name, maxPlayers, gamemode)) {
+        typeAssert('Array', buttons);
+        if (!addInstance(id, name, maxPlayers, gamemode, buttons)) {
           console.log('Name already exists');
           return { error: 'Instance already exists' };
         }
-        obj.client.event.emit(`${serviceName}/instanceCreated`, { name, maxPlayers, gamemode });
+        obj.client.event.emit(`${serviceName}/instanceCreated`, {
+          name,
+          maxPlayers,
+          gamemode,
+          buttons,
+        });
         obj.client.event.subscribe(`${serviceName}/instancePing`, instancePinged);
         return {};
-      },
+      }
     },
     // Returns all the instances as a list of objects.
     getInstances: {
-      method: () => instances,
-    },
+      method: () => instances
+    }
   });
   obj.client.event.subscribe(`${serviceName}/playerAdded`, data => {
     addPlayerToInstance(data.instanceName);
