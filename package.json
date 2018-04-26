@@ -13,7 +13,7 @@
   "scripts": {
     "start": "npm run build  && node build/services.js",
     "start-local": "npm run build  && RUN_LOCAL=1 node build/services.js",
-    "start-pc-local": "npm run build && set RUN_LOCAL=1 node build/services.js",
+    "start-pc-local": "npm run build && set RUN_LOCAL=1 && node build/services.js",
     "build": "babel src -d build",
     "test": "npm run build && jest src/test.js",
     "eject": "node eject",
