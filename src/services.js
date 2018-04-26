@@ -55,7 +55,7 @@ function addInstance(uiId, name, maxPlayers, gamemode, buttons) {
     maxPlayers,
     gamemode,
     buttons
-  });
+  };
   return true;
 }
 
