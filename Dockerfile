@@ -22,4 +22,4 @@ COPY --from=builder app/node_modules ./node_modules
 COPY --from=builder app/build ./build
 # Start application
 ENTRYPOINT ["node"]
-CMD ["build/index.js"]
+CMD ["build/services.js"]
