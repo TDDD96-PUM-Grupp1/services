@@ -10,18 +10,21 @@ const validInstance1 = {
   name: 'instanceName',
   maxPlayers: 10,
   gamemode: 'testGamemode',
+  buttons: ['superheavy', 'superfast'],
 };
 
 const validInstance1Compare = {
   id: 'randomid',
   maxPlayers: 10,
   gamemode: 'testGamemode',
+  buttons: ['superheavy', 'superfast'],
 };
 
 const validInstance2Compare = {
   id: 'randomid2',
   maxPlayers: 15,
   gamemode: 'testGamemode2',
+  buttons: ['invis'],
 };
 
 const validInstance2 = {
@@ -29,6 +32,7 @@ const validInstance2 = {
   name: 'instanceName2',
   maxPlayers: 15,
   gamemode: 'testGamemode2',
+  buttons: ['invis'],
 };
 
 const invalidInstance1 = {};
@@ -72,11 +76,7 @@ describe('Service', () => {
         expect(data).toEqual({});
       })
       .catch(data => {
-        console.log('above create instance data');
-        console.log(data);
-        console.log('below data');
-        // TODO Fix this one
-        //expect(data).not.toEqual(expect.anything());
+        expect(data).not.toEqual(expect.anything());
       });
   });
 
@@ -99,8 +99,7 @@ describe('Service', () => {
         expect(instances[validInstance1.name]).toEqual(obj);
       })
       .catch(data => {
-        // TODO fix this
-        // expect(data).not.toEqual(expect.anything());
+        expect(data).not.toEqual(expect.anything());
       });
   });
 
@@ -111,8 +110,7 @@ describe('Service', () => {
         expect(data).toEqual({});
       })
       .catch(data => {
-        // TODO Fix this
-        // expect(data).not.toEqual(expect.anything());
+        expect(data).not.toEqual(expect.anything());
       });
   });
 
@@ -126,8 +124,7 @@ describe('Service', () => {
         expect(instances[validInstance2.name]).toEqual(obj2);
       })
       .catch(data => {
-        // TODO Fix this
-        // expect(data).not.toEqual(expect.anything());
+        expect(data).not.toEqual(expect.anything());
       });
   });
 
