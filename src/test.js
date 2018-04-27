@@ -42,6 +42,7 @@ const invalidInstance2 = {
   name: 12,
   maxPlayers: '',
   gamemode: {},
+  buttons: '',
 };
 
 describe('Server', () => {
