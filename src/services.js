@@ -46,7 +46,9 @@ function checkInstanceName(name) {
  * @return false if the given instance name already exists.
  */
 function addInstance(uiId, name, maxPlayers, gamemode, buttons) {
-  if (!checkInstanceName(name)) return false;
+  if (!checkInstanceName(name)) {
+    return false;
+  }
 
   instances[name] = {
     id: uiId,
@@ -54,7 +56,7 @@ function addInstance(uiId, name, maxPlayers, gamemode, buttons) {
     ping: timeoutCount,
     maxPlayers,
     gamemode,
-    buttons
+    buttons,
   };
   return true;
 }
@@ -86,7 +88,7 @@ function createService(address, runForever, credentials) {
     serviceName,
     address,
     runForever,
-    credentials
+    credentials,
   });
 
   obj.registerApi({
@@ -100,7 +102,6 @@ function createService(address, runForever, credentials) {
         typeAssert('String', gamemode);
         typeAssert('Array', buttons);
         if (!addInstance(id, name, maxPlayers, gamemode, buttons)) {
-          console.log('Name already exists');
           throw new Error('Instance already exists');
         }
         obj.client.event.emit(`${serviceName}/instanceCreated`, {
@@ -110,12 +111,12 @@ function createService(address, runForever, credentials) {
           buttons,
         });
         return {};
-      }
+      },
     },
     // Returns all the instances as a list of objects.
     getInstances: {
-      method: () => instances
-    }
+      method: () => instances,
+    },
   });
   obj.client.event.subscribe(`${serviceName}/instancePing`, instancePinged);
   obj.client.event.subscribe(`${serviceName}/playerAdded`, data => {
@@ -146,6 +147,7 @@ function ping(service) {
 
 function main() {
   if (process.env.RUN_LOCAL) {
+    // eslint-disable-next-line
     console.log('Using local Deepstream server.');
     settings.communication.host_ip = 'localhost:60020';
   }
