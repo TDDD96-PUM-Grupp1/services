@@ -101,7 +101,7 @@ function createService(address, runForever, credentials) {
         typeAssert('Number', maxPlayers);
         typeAssert('String', gamemode);
         typeAssert('Array', buttons);
-         if (name.length > 21) {
+        if (name.length > 21) {
           throw new Error('Name is too long');
         }
         if (name.length === 0) {
