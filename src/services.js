@@ -99,6 +99,12 @@ function createService(address, runForever, credentials) {
         typeAssert('String', name);
         typeAssert('Number', maxPlayers);
         typeAssert('String', gamemode);
+        if (name.length > 21) {
+          throw new Error('Name is too long');
+        }
+        if (name.length === 0) {
+          throw new Error('No name specified');
+        }
         if (!addInstance(id, name, maxPlayers, gamemode)) {
           throw new Error('Instance already exists');
         }
