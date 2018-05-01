@@ -45,7 +45,7 @@ function checkInstanceName(name) {
  * @param String gamemode Gamemode of the instance.
  * @return false if the given instance name already exists.
  */
-function addInstance(uiId, name, maxPlayers, gamemode) {
+function addInstance(uiId, name, maxPlayers, gamemode, buttons) {
   if (!checkInstanceName(name)) {
     return false;
   }
@@ -56,6 +56,7 @@ function addInstance(uiId, name, maxPlayers, gamemode) {
     ping: timeoutCount,
     maxPlayers,
     gamemode,
+    buttons,
   };
   return true;
 }
@@ -94,21 +95,27 @@ function createService(address, runForever, credentials) {
     // Creates an instance with the given name.
     createInstance: {
       // eslint-disable-next-line
-      method: ({ id, name, maxPlayers, gamemode }) => {
+      method: ({ id, name, maxPlayers, gamemode, buttons }) => {
         typeAssert('String', id);
         typeAssert('String', name);
         typeAssert('Number', maxPlayers);
         typeAssert('String', gamemode);
+        typeAssert('Array', buttons);
         if (name.length > 21) {
           throw new Error('Name is too long');
         }
         if (name.length === 0) {
           throw new Error('No name specified');
         }
-        if (!addInstance(id, name, maxPlayers, gamemode)) {
+        if (!addInstance(id, name, maxPlayers, gamemode, buttons)) {
           throw new Error('Instance already exists');
         }
-        obj.client.event.emit(`${serviceName}/instanceCreated`, { name, maxPlayers, gamemode });
+        obj.client.event.emit(`${serviceName}/instanceCreated`, {
+          name,
+          maxPlayers,
+          gamemode,
+          buttons,
+        });
         return {};
       },
     },

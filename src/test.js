@@ -10,18 +10,21 @@ const validInstance1 = {
   name: 'instanceName',
   maxPlayers: 10,
   gamemode: 'testGamemode',
+  buttons: ['superheavy', 'superfast'],
 };
 
 const validInstance1Compare = {
   id: 'randomid',
   maxPlayers: 10,
   gamemode: 'testGamemode',
+  buttons: ['superheavy', 'superfast'],
 };
 
 const validInstance2Compare = {
   id: 'randomid2',
   maxPlayers: 15,
   gamemode: 'testGamemode2',
+  buttons: ['invis'],
 };
 
 const validInstance2 = {
@@ -29,6 +32,7 @@ const validInstance2 = {
   name: 'instanceName2',
   maxPlayers: 15,
   gamemode: 'testGamemode2',
+  buttons: ['invis'],
 };
 
 const invalidInstance1 = {};
@@ -38,6 +42,7 @@ const invalidInstance2 = {
   name: 12,
   maxPlayers: '',
   gamemode: {},
+  buttons: '',
 };
 
 describe('Server', () => {
