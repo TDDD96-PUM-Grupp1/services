@@ -157,7 +157,11 @@ function main() {
     console.log('Using local Deepstream server.');
     settings.communication.host_ip = 'localhost:60020';
   }
-  const service = createService(settings.communication.host_ip, true, settings.communication.credentials_url);
+  const service = createService(
+    settings.communication.host_ip,
+    true,
+    settings.communication.credentials_url
+  );
   service.start();
   setInterval(ping, 1000 / pingrate, service);
 }
