@@ -156,6 +156,7 @@ function main() {
     // eslint-disable-next-line
     console.log('Using local Deepstream server.');
     settings.communication.host_ip = 'localhost:60020';
+    settings.communication.credentials_url = undefined;
   }
   const service = createService(
     settings.communication.host_ip,
