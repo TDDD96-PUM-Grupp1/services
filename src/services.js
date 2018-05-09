@@ -83,12 +83,12 @@ function instancePinged(data) {
  * @param address the ip of the deepstream server.
  * @param runForever true if the service should run forever.
  */
-function createService(address, runForever, credentials) {
+function createService(address, runForever, credentialsUrl) {
   const obj = createRpcService({
     serviceName,
     address,
     runForever,
-    credentials,
+    credentialsUrl,
   });
 
   obj.registerApi({
