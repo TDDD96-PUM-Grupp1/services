@@ -31,7 +31,8 @@ yarn
 Now that you have the Service and all the needed packages you can host it in a few ways depending on your use-case:
 
 ## Server using Windows Docker
-This will host the services and connect to a deepstream server at deepstream:6020 with the authentication tokens taken from http://authenticator:3000/getAuthToken. This part of the setup was not made by the bachelor students, as such no clear information to set the authenticator up can be described.```
+This will host the services and connect to a deepstream server at deepstream:6020 with the authentication tokens taken from http://authenticator:3000/getAuthToken. This part of the setup was not made by the bachelor students, as such no clear information to set the authenticator up can be described.
+```
 yarn start-pc
 ```
 
